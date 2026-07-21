@@ -24,6 +24,7 @@ data/*.csv
 !data/sample.csv
 models_saved/*.joblib
 models_saved/*.pkl
+!models_saved/.gitkeep
 
 # Reports (generated, not source)
 reports/*.html
