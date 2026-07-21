@@ -1,4 +1,5 @@
 """Tests for automl.evaluation.metrics."""
+
 from pathlib import Path
 
 import pytest

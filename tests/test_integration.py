@@ -4,6 +4,7 @@ dataset and asserts every stage actually produced real output.
 This is intentionally separate from the unit tests in other files — those
 test each module in isolation, this one proves they work together.
 """
+
 from pathlib import Path
 
 import numpy as np
@@ -33,7 +34,8 @@ from automl.reporting.report_generator import generate_html_report
 def tiny_dataset(tmp_path):
     """A small, fast synthetic dataset -- just enough to exercise every stage."""
     X, y = make_classification(
-        n_samples=100, n_features=4, n_informative=3, n_redundant=0, random_state=42)
+        n_samples=100, n_features=4, n_informative=3, n_redundant=0, random_state=42
+    )
     df = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(4)])
     df["category"] = np.random.RandomState(42).choice(["a", "b"], size=len(df))
     df["target"] = y

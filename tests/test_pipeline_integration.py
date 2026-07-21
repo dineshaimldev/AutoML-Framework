@@ -9,7 +9,16 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from automl.cli import predict_from_csv, run_pipeline
-from automl.config import AutoMLConfig, DataConfig, MLflowConfig, ModelEntry, OptimizationConfig, PreprocessingConfig, ReportingConfig, TaskConfig
+from automl.config import (
+    AutoMLConfig,
+    DataConfig,
+    MLflowConfig,
+    ModelEntry,
+    OptimizationConfig,
+    PreprocessingConfig,
+    ReportingConfig,
+    TaskConfig,
+)
 from automl.models.persistence import TrainedPipeline, load_pipeline, save_pipeline
 
 
@@ -17,8 +26,50 @@ def _write_synthetic_dataset(path: Path) -> None:
     df = pd.DataFrame(
         {
             "age": [25, 35, 45, 55, 65, 20, 30, 40, 50, 60, 25, 35, 45, 55, 65, 20, 30, 40, 50, 60],
-            "income": [30000, 40000, 50000, 60000, 70000, 32000, 42000, 52000, 62000, 72000, 31000, 41000, 51000, 61000, 71000, 33000, 43000, 53000, 63000, 73000],
-            "city": ["A", "B", "A", "B", "A", "B", "A", "B", "A", "B", "A", "B", "A", "B", "A", "B", "A", "B", "A", "B"],
+            "income": [
+                30000,
+                40000,
+                50000,
+                60000,
+                70000,
+                32000,
+                42000,
+                52000,
+                62000,
+                72000,
+                31000,
+                41000,
+                51000,
+                61000,
+                71000,
+                33000,
+                43000,
+                53000,
+                63000,
+                73000,
+            ],
+            "city": [
+                "A",
+                "B",
+                "A",
+                "B",
+                "A",
+                "B",
+                "A",
+                "B",
+                "A",
+                "B",
+                "A",
+                "B",
+                "A",
+                "B",
+                "A",
+                "B",
+                "A",
+                "B",
+                "A",
+                "B",
+            ],
             "target": [0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1],
         }
     )
@@ -31,13 +82,19 @@ def test_full_pipeline_runs_end_to_end(tmp_path):
 
     config_path = tmp_path / "config.yaml"
     config = AutoMLConfig(
-        data=DataConfig(path=str(data_path), target_column="target", test_size=0.2, random_state=42),
+        data=DataConfig(
+            path=str(data_path), target_column="target", test_size=0.2, random_state=42
+        ),
         task=TaskConfig(type="classification"),
         preprocessing=PreprocessingConfig(scale_numeric=True, encode_categorical="onehot"),
         models=[ModelEntry(name="logistic_regression", enabled=True)],
-        optimization=OptimizationConfig(n_trials=2, timeout_seconds=30, cv_folds=2, metric="accuracy"),
+        optimization=OptimizationConfig(
+            n_trials=2, timeout_seconds=30, cv_folds=2, metric="accuracy"
+        ),
         mlflow=MLflowConfig(enabled=False),
-        reporting=ReportingConfig(output_dir=str(tmp_path / "reports"), formats=["html"], include_shap=False),
+        reporting=ReportingConfig(
+            output_dir=str(tmp_path / "reports"), formats=["html"], include_shap=False
+        ),
         random_seed=42,
     )
     config_path.write_text(config.model_dump_json(indent=2), encoding="utf-8")
@@ -78,7 +135,13 @@ def test_predict_from_csv_writes_predictions(tmp_path):
     model = LogisticRegression(max_iter=1000)
     pipeline = Pipeline([("preprocess", preprocessor), ("model", model)])
     pipeline.fit(
-        pd.DataFrame({"age": [25, 35, 45, 55], "income": [30000, 40000, 50000, 60000], "city": ["A", "B", "A", "B"]}),
+        pd.DataFrame(
+            {
+                "age": [25, 35, 45, 55],
+                "income": [30000, 40000, 50000, 60000],
+                "city": ["A", "B", "A", "B"],
+            }
+        ),
         [0, 0, 1, 1],
     )
 
@@ -106,7 +169,10 @@ def test_saved_pipeline_tracks_dataset_hash(tmp_path):
 
     trained_pipeline = TrainedPipeline(
         preprocessor=ColumnTransformer(
-            [("num", StandardScaler(), ["age", "income"]), ("cat", OneHotEncoder(handle_unknown="ignore"), ["city"])],
+            [
+                ("num", StandardScaler(), ["age", "income"]),
+                ("cat", OneHotEncoder(handle_unknown="ignore"), ["city"]),
+            ],
             remainder="drop",
         ),
         model=LogisticRegression(max_iter=1000),

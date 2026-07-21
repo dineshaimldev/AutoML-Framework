@@ -1,4 +1,5 @@
 """Load a dataset from CSV and split it into train/test sets."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -71,9 +72,7 @@ def load_dataset(data_config: DataConfig) -> pd.DataFrame:
     if data_config.target_column in df.columns and df[data_config.target_column].dtype == object:
         unique_vals = set(df[data_config.target_column].dropna().unique())
         if unique_vals <= {"Yes", "No"}:
-            df[data_config.target_column] = df[data_config.target_column].map(
-                {"Yes": 1, "No": 0}
-            )
+            df[data_config.target_column] = df[data_config.target_column].map({"Yes": 1, "No": 0})
 
     # --- Generic validation (applies to any dataset) ---
 

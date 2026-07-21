@@ -12,7 +12,7 @@ from pathlib import Path
 import pandas as pd
 
 from automl.config import load_config
-from automl.data.loader import load_and_split
+from automl.data.loader import clean_known_quirks, load_and_split
 from automl.evaluation.explainability import plot_shap_summary
 from automl.evaluation.metrics import fit_and_evaluate_best_model
 from automl.evaluation.plots import plot_confusion_matrix, plot_feature_importance, plot_roc_curve
@@ -20,7 +20,6 @@ from automl.models.persistence import TrainedPipeline, load_pipeline, save_pipel
 from automl.optimization.search import pick_best_overall, search_all_models
 from automl.preprocessing.pipeline import build_preprocessor, detect_column_types
 from automl.reporting.report_generator import generate_html_report
-from automl.data.loader import load_and_split, clean_known_quirks
 from automl.tracking.mlflow_logger import (
     log_final_evaluation,
     log_model_search_summary,
@@ -210,7 +209,11 @@ def run_pipeline(config_path: str) -> None:
             )
 
 
-def predict_from_csv(model_path: str | os.PathLike[str], input_path: str | os.PathLike[str], output_path: str | os.PathLike[str]) -> str:
+def predict_from_csv(
+    model_path: str | os.PathLike[str],
+    input_path: str | os.PathLike[str],
+    output_path: str | os.PathLike[str],
+) -> str:
     """Load a trained pipeline and write one prediction per input row."""
     pipeline = load_pipeline(str(model_path))
     input_frame = pd.read_csv(input_path)
