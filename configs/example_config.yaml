@@ -1,0 +1,55 @@
+# AutoML run configuration
+# Edit this file to point at your dataset and control the search — no code changes needed.
+
+data:
+  path: "data/sample.csv"        # path to CSV file
+  target_column: "Churn"        # name of the label column
+  test_size: 0.2
+  random_state: 42
+
+task:
+  type: "classification"         # classification | regression (regression not yet wired up)
+
+preprocessing:
+  numeric_impute_strategy: "median"     # mean | median | most_frequent
+  categorical_impute_strategy: "most_frequent"
+  scale_numeric: true
+  encode_categorical: "onehot"          # onehot | ordinal
+
+models:
+  # Which models to include in the search. Comment any out to skip them.
+  - name: "logistic_regression"
+    enabled: true
+  - name: "random_forest"
+    enabled: true
+  - name: "gradient_boosting"
+    enabled: true
+  - name: "svm"
+    enabled: false   # off by default: slower on larger datasets
+
+optimization:
+  n_trials: 30
+  timeout_seconds: 600
+  cv_folds: 5
+  sampler: "tpe"        # tpe = Tree-structured Parzen Estimator (Bayesian)
+  pruner: "median"      # median pruner kills clearly-bad trials early
+  metric: "roc_auc"     # roc_auc | accuracy | f1
+
+mlflow:
+  enabled: true
+  experiment_name: "automl_framework_runs"
+  tracking_uri: "sqlite:///mlflow.db"  # local, free, no server needed
+
+reporting:
+  output_dir: "reports"
+  formats: ["html"]
+  include_shap: true
+  include_confusion_matrix: true
+  include_roc_curve: true
+  include_feature_importance: true
+
+logging:
+  level: "INFO"
+  file_path: null
+
+random_seed: 42

@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Data & models (don't commit large/raw data or trained model binaries)
+data/*.csv
+!data/sample.csv
+models_saved/*.joblib
+models_saved/*.pkl
+
+# Reports (generated, not source)
+reports/*.html
+reports/*.pdf
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+mlflow.db

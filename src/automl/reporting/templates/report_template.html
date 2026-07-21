@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AutoML Report — {{ run_timestamp }}</title>
+    <style>
+        body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: 40px; background: #f7f8fa; color: #1a1a1a; }
+        .container { max-width: 960px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        h1 { font-size: 26px; margin-bottom: 4px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        h2 { font-size: 18px; margin-top: 40px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        .metric-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin: 20px 0; }
+        .metric-card { background: #f0f4ff; border-radius: 8px; padding: 16px; text-align: center; }
+        .metric-value { font-size: 22px; font-weight: 700; color: #2952e3; }
+        .metric-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { color: #666; font-weight: 600; }
+        .plot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .plot-card img { width: 100%; border-radius: 6px; border: 1px solid #eee; }
+        .plot-card p { text-align: center; font-size: 13px; color: #666; margin-top: 6px; }
+        .badge { display: inline-block; background: #e6f4ea; color: #1e7e34; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
+        .leaderboard-winner { background: #fff8e1; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>AutoML Evaluation Report</h1>
+    <p class="subtitle">Generated {{ run_timestamp }} · Dataset: <code>{{ dataset_path }}</code></p>
+
+    <span class="badge">Winning model: {{ best_model_name }}</span>
+
+    <h2>Test Set Performance</h2>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <div class="metric-value">{{ "%.3f"|format(accuracy) }}</div>
+            <div class="metric-label">Accuracy</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ "%.3f"|format(precision) }}</div>
+            <div class="metric-label">Precision</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ "%.3f"|format(recall) }}</div>
+            <div class="metric-label">Recall</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ "%.3f"|format(f1) }}</div>
+            <div class="metric-label">F1 Score</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ "%.3f"|format(roc_auc) }}</div>
+            <div class="metric-label">ROC-AUC</div>
+        </div>
+    </div>
+
+    <h2>Model Leaderboard</h2>
+    <table>
+        <tr><th>Rank</th><th>Model</th><th>{{ optimization_metric }} (CV mean)</th></tr>
+        {% for row in leaderboard %}
+        <tr class="{{ 'leaderboard-winner' if loop.first else '' }}">
+            <td>{{ loop.index }}</td>
+            <td>{{ row.model_name }}</td>
+            <td>{{ "%.4f"|format(row.best_score) }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Best Hyperparameters</h2>
+    <table>
+        {% for key, value in best_params.items() %}
+        <tr><td>{{ key }}</td><td>{{ value }}</td></tr>
+        {% endfor %}
+    </table>
+
+    <h2>Diagnostic Plots</h2>
+    <div class="plot-grid">
+        {% if confusion_matrix_path %}
+        <div class="plot-card">
+            <img src="{{ confusion_matrix_path }}" alt="Confusion Matrix">
+            <p>Confusion Matrix</p>
+        </div>
+        {% endif %}
+        {% if roc_curve_path %}
+        <div class="plot-card">
+            <img src="{{ roc_curve_path }}" alt="ROC Curve">
+            <p>ROC Curve</p>
+        </div>
+        {% endif %}
+        {% if feature_importance_path %}
+        <div class="plot-card">
+            <img src="{{ feature_importance_path }}" alt="Feature Importance">
+            <p>Feature Importance</p>
+        </div>
+        {% endif %}
+        {% if shap_summary_path %}
+        <div class="plot-card">
+            <img src="{{ shap_summary_path }}" alt="SHAP Summary">
+            <p>SHAP Summary</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <h2>Configuration Used</h2>
+    <table>
+        <tr><td>Task type</td><td>{{ task_type }}</td></tr>
+        <tr><td>Optimization metric</td><td>{{ optimization_metric }}</td></tr>
+        <tr><td>Optuna trials per model</td><td>{{ n_trials }}</td></tr>
+        <tr><td>CV folds</td><td>{{ cv_folds }}</td></tr>
+        <tr><td>Train / test rows</td><td>{{ train_rows }} / {{ test_rows }}</td></tr>
+    </table>
+</div>
+</body>
+</html>
