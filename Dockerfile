@@ -18,4 +18,4 @@ COPY models_saved ./models_saved
 EXPOSE 8000
 
 # Default: serve the API. Override with `docker run ... automl run --config ...`
-CMD ["uvicorn", "automl.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD uvicorn automl.api:app --host 0.0.0.0 --port ${PORT:-8000}
