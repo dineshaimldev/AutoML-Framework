@@ -1,11 +1,4 @@
-"""Compute evaluation metrics for the best model found by the search.
-
-Optuna's cross-validation never leaves us with one fitted model — each
-fold trains a fresh copy internally. So the first job here is to actually
-fit the best model's hyperparameters on the *full* training set, then
-evaluate it once, honestly, on the held-out test set.
-"""
-
+"""Compute evaluation metrics for the best model found by the search."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -45,39 +38,39 @@ class EvaluationResult:
 def _instantiate_model_from_params(
     model_name: str, best_params: dict, random_state: int
 ) -> BaseEstimator:
-    """Rebuild a model directly from its winning hyperparameters (no Optuna trial needed).
-
-    Optuna prefixes each param with the model's short name (e.g. "rf_n_estimators"),
-    so we strip that prefix to get the real sklearn constructor argument name.
-    """
+    """Rebuild a model directly from its winning hyperparameters (no Optuna trial needed)."""
     prefix_map = {
         "logistic_regression": "logreg_",
         "random_forest": "rf_",
         "gradient_boosting": "gb_",
         "svm": "svm_",
+        "xgboost": "xgb_",
+        "knn": "knn_",
     }
     prefix = prefix_map[model_name]
-    clean_params = {k[len(prefix) :]: v for k, v in best_params.items() if k.startswith(prefix)}
+    clean_params = {k[len(prefix):]: v for k, v in best_params.items() if k.startswith(prefix)}
 
     if model_name not in MODEL_REGISTRY:
         raise ValueError(f"Unknown model '{model_name}'")
 
     if model_name == "logistic_regression":
         from sklearn.linear_model import LogisticRegression
-
         return LogisticRegression(max_iter=1000, random_state=random_state, **clean_params)
     if model_name == "random_forest":
         from sklearn.ensemble import RandomForestClassifier
-
         return RandomForestClassifier(random_state=random_state, n_jobs=-1, **clean_params)
     if model_name == "gradient_boosting":
         from sklearn.ensemble import GradientBoostingClassifier
-
         return GradientBoostingClassifier(random_state=random_state, **clean_params)
     if model_name == "svm":
         from sklearn.svm import SVC
-
         return SVC(probability=True, random_state=random_state, **clean_params)
+    if model_name == "xgboost":
+        from xgboost import XGBClassifier
+        return XGBClassifier(random_state=random_state, eval_metric="logloss", **clean_params)
+    if model_name == "knn":
+        from sklearn.neighbors import KNeighborsClassifier
+        return KNeighborsClassifier(**clean_params)
 
     raise ValueError(f"No instantiation logic for '{model_name}'")
 
@@ -96,7 +89,7 @@ def fit_and_evaluate_best_model(
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
-    y_proba = model.predict_proba(X_test)[:, 1]  # probability of the positive class
+    y_proba = model.predict_proba(X_test)[:, 1]
 
     fpr, tpr, _ = roc_curve(y_test, y_proba)
 

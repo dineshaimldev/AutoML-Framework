@@ -43,7 +43,7 @@ class OptimizationConfig(BaseModel):
     cv_folds: int = 5
     sampler: Literal["tpe", "random"] = "tpe"
     pruner: Literal["median", "none"] = "median"
-    metric: Literal["roc_auc", "accuracy", "f1"] = "roc_auc"
+    metric: Literal["roc_auc", "accuracy", "f1", "precision", "recall"] = "roc_auc"
 
 
 class MLflowConfig(BaseModel):

@@ -26,16 +26,210 @@ from automl.optimization.search import pick_best_overall, search_all_models
 from automl.preprocessing.pipeline import build_preprocessor, detect_column_types
 from automl.reporting.report_generator import generate_html_report
 
-st.set_page_config(page_title="AutoML Mini-Framework", layout="wide")
-st.title("🤖 AutoML Mini-Framework")
-st.caption("Upload a CSV, pick a target column, and let Optuna search models for you.")
+st.set_page_config(page_title="Churn Intelligence Console", layout="wide", page_icon="\u25c6")
+
+# ---------------------------------------------------------------------------
+# Design system -- tokens pulled from the Figma export (light / orange brand)
+# ---------------------------------------------------------------------------
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap');
+
+    :root {
+        --bg: #ffffff;
+        --bg-subtle: #fafafa;
+        --bg-muted: #f5f5f5;
+        --border: #e5e5e5;
+        --border-strong: #d4d4d4;
+        --text: #171717;
+        --text-secondary: #525252;
+        --text-muted: #a3a3a3;
+        --orange: #f97316;
+        --orange-dark: #ea580c;
+        --orange-light: #fff7ed;
+        --orange-mid: #fed7aa;
+        --blue-info: #eff6ff;
+        --blue-info-text: #1d4ed8;
+        --blue-info-border: #bfdbfe;
+        --green: #16a34a;
+        --green-bg: #f0fdf4;
+        --radius-sm: 6px;
+        --radius: 10px;
+        --radius-lg: 14px;
+        --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    .stApp {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+    section[data-testid="stSidebar"] {
+        background: var(--bg-subtle);
+        border-right: 1px solid var(--border);
+    }
+    #MainMenu, footer, header {visibility: hidden;}
+
+    /* -- hero -- */
+    .console-hero {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 20px;
+        margin-bottom: 28px;
+    }
+    .console-eyebrow {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: var(--orange-dark);
+        text-transform: uppercase;
+        background: var(--orange-light);
+        border: 1px solid var(--orange-mid);
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-bottom: 12px;
+    }
+    .console-title {
+        font-size: 30px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+    .console-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-top: 6px;
+    }
+
+    /* -- generic panel card (data preview, plots, leaderboard wrapper) -- */
+    .panel-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px 20px;
+        margin-bottom: 8px;
+    }
+
+    /* -- metric cards -- */
+    .metric-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 16px 18px;
+    }
+    .metric-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+    .metric-value {
+        font-family: 'Inter', monospace;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    /* -- section labels -- */
+    .section-label {
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--text);
+        border-left: 3px solid var(--orange);
+        padding-left: 10px;
+        margin: 32px 0 14px 0;
+    }
+
+    /* -- winner banner -- */
+    .winner-banner {
+        background: var(--orange-light);
+        border: 1px solid var(--orange-mid);
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--orange-dark);
+        margin-bottom: 24px;
+    }
+
+    /* -- plot caption -- */
+    .plot-caption {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-top: 6px;
+        text-align: center;
+    }
+
+    /* -- streamlit widget overrides -- */
+    .stButton > button {
+        background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+        color: #ffffff;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        box-shadow: var(--shadow);
+    }
+    .stButton > button:hover {
+        opacity: 0.92;
+        color: #ffffff;
+    }
+    .stDownloadButton > button {
+        background: var(--bg);
+        color: var(--orange-dark);
+        border: 1px solid var(--orange-mid);
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+    }
+    .stDownloadButton > button:hover {
+        background: var(--orange-light);
+        color: var(--orange-dark);
+    }
+    div[data-testid="stFileUploader"] {
+        background: var(--bg-subtle);
+        border: 1px dashed var(--border-strong);
+        border-radius: var(--radius);
+        padding: 8px;
+    }
+    .stDataFrame {
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+    }
+    div[data-testid="stStatusWidget"] {
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    """
+    <div class="console-hero">
+        <div class="console-eyebrow">AutoML \u00b7 Model Search Console</div>
+        <div class="console-title">Churn Intelligence</div>
+        <div class="console-subtitle">Upload a dataset, pick a target column, and run a Bayesian search across the model zoo.</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # --- Sidebar: configuration controls ---
 with st.sidebar:
-    st.header("1. Upload data")
+    st.markdown('<div class="section-label">01 \u00b7 Upload Data</div>', unsafe_allow_html=True)
     uploaded_file = st.file_uploader("CSV file", type=["csv"])
 
-    st.header("2. Search settings")
+    st.markdown('<div class="section-label">02 \u00b7 Search Settings</div>', unsafe_allow_html=True)
     available_models = ["logistic_regression", "random_forest", "gradient_boosting", "svm"]
     selected_models = st.multiselect(
         "Models to try", available_models, default=["logistic_regression", "random_forest"]
@@ -44,7 +238,7 @@ with st.sidebar:
     cv_folds = st.slider("Cross-validation folds", min_value=3, max_value=10, value=5)
     metric = st.selectbox("Optimization metric", ["roc_auc", "accuracy", "f1"])
 
-    run_button = st.button("🚀 Run AutoML", type="primary", use_container_width=True)
+    run_button = st.button("Run AutoML", type="primary", use_container_width=True)
 
 
 def build_config_from_ui(target_column: str, data_path: str) -> AutoMLConfig:
@@ -65,11 +259,11 @@ def build_config_from_ui(target_column: str, data_path: str) -> AutoMLConfig:
 
 # --- Main panel ---
 if uploaded_file is None:
-    st.info("Upload a CSV from the sidebar to get started. (Try the Telco Customer Churn dataset.)")
+    st.info("Upload a CSV from the sidebar to get started.")
     st.stop()
 
 preview_df = pd.read_csv(uploaded_file)
-st.subheader("Data preview")
+st.markdown('<div class="section-label">Data Preview</div>', unsafe_allow_html=True)
 st.dataframe(preview_df.head(10), use_container_width=True)
 
 target_column = st.selectbox("Target column (what you're predicting)", preview_df.columns.tolist())
@@ -162,32 +356,60 @@ with tempfile.TemporaryDirectory() as tmp_dir:
         status.update(label="Done!", state="complete")
 
     # --- Results ---
-    st.success(f"Best model: **{best.model_name}**")
+    st.markdown(
+        f'<div class="winner-banner">\u2713 Best model: {best.model_name}</div>',
+        unsafe_allow_html=True,
+    )
 
-    col1, col2, col3, col4, col5 = st.columns(5)
-    col1.metric("Accuracy", f"{evaluation.accuracy:.3f}")
-    col2.metric("Precision", f"{evaluation.precision:.3f}")
-    col3.metric("Recall", f"{evaluation.recall:.3f}")
-    col4.metric("F1", f"{evaluation.f1:.3f}")
-    col5.metric("ROC-AUC", f"{evaluation.roc_auc:.3f}")
+    st.markdown('<div class="section-label">Test Set Performance</div>', unsafe_allow_html=True)
+    metric_cols = st.columns(5)
+    metrics_to_show = [
+        ("Accuracy", evaluation.accuracy),
+        ("Precision", evaluation.precision),
+        ("Recall", evaluation.recall),
+        ("F1 Score", evaluation.f1),
+        ("ROC-AUC", evaluation.roc_auc),
+    ]
+    for col, (label, value) in zip(metric_cols, metrics_to_show):
+        col.markdown(
+            f"""
+            <div class="metric-card">
+                <div class="metric-label">{label}</div>
+                <div class="metric-value">{value:.3f}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    st.subheader("Model leaderboard")
+    st.markdown('<div class="section-label">Model Leaderboard</div>', unsafe_allow_html=True)
     leaderboard_df = pd.DataFrame(
         [{"model": r.model_name, f"{metric} (CV mean)": r.best_score} for r in
          sorted(results, key=lambda r: r.best_score, reverse=True)]
     )
     st.dataframe(leaderboard_df, use_container_width=True)
 
-    st.subheader("Diagnostic plots")
+    st.markdown('<div class="section-label">Diagnostic Plots</div>', unsafe_allow_html=True)
     plot_col1, plot_col2 = st.columns(2)
-    plot_col1.image(cm_path, caption="Confusion Matrix")
-    plot_col2.image(roc_path, caption="ROC Curve")
-    if fi_path:
-        st.image(fi_path, caption="Feature Importance")
-    if shap_path:
-        st.image(shap_path, caption="SHAP Summary")
+    with plot_col1:
+        st.image(cm_path, use_container_width=True)
+        st.markdown('<div class="plot-caption">Confusion Matrix</div>', unsafe_allow_html=True)
+    with plot_col2:
+        st.image(roc_path, use_container_width=True)
+        st.markdown('<div class="plot-caption">ROC Curve</div>', unsafe_allow_html=True)
 
+    if fi_path:
+        st.image(fi_path, use_container_width=True)
+        st.markdown('<div class="plot-caption">Feature Importance</div>', unsafe_allow_html=True)
+    if shap_path:
+        st.image(shap_path, use_container_width=True)
+        st.markdown('<div class="plot-caption">SHAP Summary</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="section-label">Export</div>', unsafe_allow_html=True)
     with open(report_path, "rb") as f:
         st.download_button(
-            "📄 Download full HTML report", f, file_name="automl_report.html", mime="text/html"
+            "Download full HTML report",
+            f,
+            file_name="automl_report.html",
+            mime="text/html",
+            use_container_width=True,
         )
