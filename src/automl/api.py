@@ -36,7 +36,13 @@ MODEL_PATH = Path("models_saved/best_model.joblib")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://automl-chat-ui.vercel.app"],
+    allow_origins=[
+        "https://automl-chat-ui.vercel.app",  # production frontend
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -221,6 +227,13 @@ async def create_job(
     metric: str = Form("roc_auc"),  # noqa: B008
 ):
     job_id = str(uuid.uuid4())
+    n_trials = min(n_trials, 12)
+    cv_folds = min(cv_folds, 3)
+    if len(models.split(",")) > 2:
+        raise HTTPException(
+            status_code=422,
+            detail="For this demo instance, please select at most 2 models per run.",
+        )
     csv_path = str(Path(tempfile.gettempdir()) / f"{job_id}.csv")
     with open(csv_path, "wb") as f:
         f.write(await file.read())
