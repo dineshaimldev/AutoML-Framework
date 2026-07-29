@@ -59,7 +59,7 @@ def search_single_model(
                 y_train,
                 cv=cv,
                 scoring=config.optimization.metric,
-                n_jobs=-1,
+                n_jobs=1,
             )
             mean_score = float(scores.mean())
 
@@ -84,7 +84,6 @@ def search_single_model(
         n_trials=config.optimization.n_trials,
         timeout=config.optimization.timeout_seconds,
         show_progress_bar=False,
-        n_jobs=-1,
     )
 
     return ModelSearchResult(

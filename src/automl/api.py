@@ -37,7 +37,7 @@ MODEL_PATH = Path("models_saved/best_model.joblib")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://automl-chat-ui.vercel.app",  # production frontend
+        "https://auto-ml-chat-ui.vercel.app",  # production frontend
         "http://localhost:5173",
         "http://localhost:5174",
         "http://127.0.0.1:5173",
