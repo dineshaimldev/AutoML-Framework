@@ -1,4 +1,5 @@
 """Compute evaluation metrics for the best model found by the search."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -48,30 +49,36 @@ def _instantiate_model_from_params(
         "knn": "knn_",
     }
     prefix = prefix_map[model_name]
-    clean_params = {k[len(prefix):]: v for k, v in best_params.items() if k.startswith(prefix)}
+    clean_params = {k[len(prefix) :]: v for k, v in best_params.items() if k.startswith(prefix)}
 
     if model_name not in MODEL_REGISTRY:
         raise ValueError(f"Unknown model '{model_name}'")
 
     if model_name == "logistic_regression":
         from sklearn.linear_model import LogisticRegression
+
         return LogisticRegression(max_iter=1000, random_state=random_state, **clean_params)
     if model_name == "random_forest":
         from sklearn.ensemble import RandomForestClassifier
+
         return RandomForestClassifier(random_state=random_state, n_jobs=-1, **clean_params)
     if model_name == "gradient_boosting":
         from sklearn.ensemble import GradientBoostingClassifier
+
         return GradientBoostingClassifier(random_state=random_state, **clean_params)
     if model_name == "svm":
         from sklearn.calibration import CalibratedClassifierCV
         from sklearn.svm import SVC
+
         base_svm = SVC(random_state=random_state, **clean_params)
         return CalibratedClassifierCV(base_svm, ensemble=False)
     if model_name == "xgboost":
         from xgboost import XGBClassifier
+
         return XGBClassifier(random_state=random_state, eval_metric="logloss", **clean_params)
     if model_name == "knn":
         from sklearn.neighbors import KNeighborsClassifier
+
         return KNeighborsClassifier(**clean_params)
 
     raise ValueError(f"No instantiation logic for '{model_name}'")

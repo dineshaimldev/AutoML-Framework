@@ -5,6 +5,7 @@ an Optuna `trial` object. The trial suggests values (e.g. trial.suggest_float),
 and Optuna decides what to suggest next based on past trial results
 (Bayesian optimization) — we just describe the search space per model here.
 """
+
 from __future__ import annotations
 
 from typing import Callable
@@ -32,7 +33,7 @@ def build_logistic_regression(trial: optuna.Trial, random_state: int) -> BaseEst
 
 def build_random_forest(trial: optuna.Trial, random_state: int) -> BaseEstimator:
     n_estimators = trial.suggest_int("rf_n_estimators", 50, 150)
-    max_depth = trial.suggest_int("rf_max_depth", 2,20 )
+    max_depth = trial.suggest_int("rf_max_depth", 2, 20)
     min_samples_split = trial.suggest_int("rf_min_samples_split", 2, 20)
     return RandomForestClassifier(
         n_estimators=n_estimators,
