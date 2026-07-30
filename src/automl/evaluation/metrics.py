@@ -63,8 +63,10 @@ def _instantiate_model_from_params(
         from sklearn.ensemble import GradientBoostingClassifier
         return GradientBoostingClassifier(random_state=random_state, **clean_params)
     if model_name == "svm":
+        from sklearn.calibration import CalibratedClassifierCV
         from sklearn.svm import SVC
-        return SVC(probability=True, random_state=random_state, **clean_params)
+        base_svm = SVC(random_state=random_state, **clean_params)
+        return CalibratedClassifierCV(base_svm, ensemble=False)
     if model_name == "xgboost":
         from xgboost import XGBClassifier
         return XGBClassifier(random_state=random_state, eval_metric="logloss", **clean_params)
