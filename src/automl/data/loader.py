@@ -7,6 +7,7 @@ hardcoding column names from any one dataset. This is what lets the
 framework actually run on a new CSV without requiring a code change
 per dataset.
 """
+
 from __future__ import annotations
 
 import logging

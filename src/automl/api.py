@@ -262,8 +262,6 @@ async def create_job(
     return {"job_id": job_id}
 
 
-
-
 @app.get("/jobs/{job_id}")
 def get_job(job_id: str):
     if job_id not in _jobs:
