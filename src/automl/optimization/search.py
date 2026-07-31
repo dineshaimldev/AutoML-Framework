@@ -44,6 +44,15 @@ def search_single_model(
 ) -> ModelSearchResult:
     """Run an Optuna study for one model type and return its best result."""
     builder = get_model_builder(model_name)
+
+    min_class_count = y_train.value_counts().min()
+    if min_class_count < config.optimization.cv_folds:
+        raise ValueError(
+            f"The smallest class in your target has only {min_class_count} example(s), "
+            f"but cv_folds is set to {config.optimization.cv_folds}. Reduce cv_folds to at "
+            f"most {min_class_count}, or use a less severely imbalanced dataset."
+        )
+
     cv = StratifiedKFold(
         n_splits=config.optimization.cv_folds,
         shuffle=True,

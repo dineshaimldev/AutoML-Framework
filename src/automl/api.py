@@ -28,6 +28,7 @@ from automl.config import (
 from automl.data.loader import load_and_split
 from automl.evaluation.metrics import fit_and_evaluate_best_model
 from automl.models.persistence import load_pipeline
+from automl.models.zoo import MODEL_REGISTRY
 from automl.optimization.search import pick_best_overall, search_single_model
 from automl.preprocessing.pipeline import build_preprocessor, detect_column_types
 
@@ -234,6 +235,13 @@ async def create_job(
             status_code=422,
             detail="For this demo instance, please select at most 2 models per run.",
         )
+    requested_models = [m.strip() for m in models.split(",")]
+    unknown_models = [m for m in requested_models if m not in MODEL_REGISTRY]
+    if unknown_models:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown model(s): {unknown_models}. Available: {list(MODEL_REGISTRY.keys())}",
+        )
     csv_path = str(Path(tempfile.gettempdir()) / f"{job_id}.csv")
     with open(csv_path, "wb") as f:
         f.write(await file.read())
@@ -252,6 +260,8 @@ async def create_job(
     thread.start()
 
     return {"job_id": job_id}
+
+
 
 
 @app.get("/jobs/{job_id}")
