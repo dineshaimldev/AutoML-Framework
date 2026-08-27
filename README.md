@@ -8,6 +8,19 @@ FastAPI serving layer.
 > Status: 🚧 scaffold stage — architecture and CI are in place; pipeline logic
 > is being built out module by module. See "Roadmap" below.
 
+## GitHub About section (recommended)
+
+**Repository description**
+
+Bayesian hyperparameter optimization AutoML framework for ML engineers and data
+scientists, combining Optuna, SHAP, MLflow, and FastAPI with CI/CD, Docker, and
+automated tests for production-ready workflows.
+
+**Suggested GitHub topics**
+
+`automl`, `bayesian-optimization`, `optuna`, `mlflow`, `fastapi`,
+`machine-learning`, `hyperparameter-tuning`, `python`
+
 ## Why this over AutoGluon / TPOT?
 
 Mature AutoML libraries exist (AutoGluon, TPOT, H2O). This project isn't trying
